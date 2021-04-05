@@ -8,12 +8,39 @@ const questions = [];
 const prompts = [
     {
         type: 'input',
+        message: 'What is your email address?',
+        name: 'email'
+    },
+    {
+        type: 'input',
+        message: 'What is your github user name?',
+        name: 'github'
+    },
+    {
+        type: 'input',
+        message: 'What is the github reponame?',
+        name: 'repo', 
+    },
+    {
+        type: 'list',
+        message: 'Are you hosting a live site?',
+        choices: ['No', 'Yes - On Github', 'Yes - NOT on Github'],
+        name: 'livesite'
+    },
+    {
+        type: 'input',
+        message: 'What is the live site URL?',
+        name: 'url',
+        when: (answers) => answers.livesite === 'Yes - NOT on Github' 
+    },
+    {
+        type: 'input',
         message: 'What is the project title?',
         name: 'title'
     },
     {
         type: 'input',
-        message: 'What is the product descrition? (motivation, why, what does it solve, lessons learned',
+        message: 'What is the product description? (motivation, why, what does it solve',
         name: 'description'
     },
     {
@@ -23,26 +50,8 @@ const prompts = [
         name: 'install'
     },
     {
-        type: 'confirm',
-        message: 'Are you hosting this site on Github?',
-        name: 'hostgithub'
-    },
-    {
         type: 'input',
-        message: 'What is the github reponame?',
-        name: 'repo',
-        when: (answers) => answers.hostgithub === true 
-    },
-    {
-        type: 'input',
-        message: 'What is the live site URL?',
-        prefix: 'https://',
-        name: 'url',
-        when: (answers) => answers.hostgithub === false 
-    },
-    {
-        type: 'input',
-        message: 'Usage instructions / instructions?',
+        message: 'Usage instructions?',
         name: 'usage'
     },
     {
@@ -87,11 +96,11 @@ function writeToFile(fileName, data) {}
 function init() {
     inquirer.prompt(prompts)
     .then((response) => {
-        const { title, description, install, hostgithub, repo, url, usage, credits, license, fflicense, features, contribute, tests } = response;
-        var gurl = ""
+        const { email, github, repo, livesite, url, title, description, install, usage, credits, license, fflicense, features, contribute, tests } = response;
+        var gurl = "No URL"
         var thelicense = ""
         var badgeURL = ""
-        if(hostgithub === true) {
+        if(livesite === 'Yes - On Github') {
             gurl = "https://mark-artim.github.io/"+repo;
         } else {
             gurl = url;
@@ -115,31 +124,42 @@ ${badgeURL}
 - [Usage](#usage)
 - [Credits](#credits)
 - [License](#license)
+- [Questions](#questions)
 
 ## Installation
 ${install}
+The github repo can be found at: [!${repo}](https://github.com/${github}/${repo})
 
-Live site URL: ![${description}](${gurl})
+Live site URL: ${url}
 
 ## Usage
 ${usage}
 
+
 ## Credits
 ${credits}
+
 
 ## License
 ${thelicense}
 
+
 ## Features
 ${features}
+
 
 ## How to Contribute
 ${contribute}
 
+
 ## Tests
 ${tests}
+
+
+## Questions
+If you have any questions please contact me at ${email}
+ or visit me at [Github](https://github.com/${github})
         `
-        console.log(title, description);
         console.log(content);
         fs.writeFile('README.md', content, (err) =>
          err ? console.error(err) : console.log('README.md created!'))
@@ -148,16 +168,30 @@ ${tests}
 
 function getBadge(license) {
     var licTest = license;
-    console.log('in getBadge license is '+license+' and licTest is '+licTest)
     switch (licTest) {
         case 'Apache':
             badgeURL = '[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)';
-            console.log('badgeURL is '+badgeURL);
             return badgeURL;
             break
+        case 'Eclipse':
+            badgeURL = '[![License](https://img.shields.io/badge/License-EPL%201.0-red.svg)](https://opensource.org/licenses/EPL-1.0)';
+            return badgeURL;
+            break
+        case 'MIT':
+            badgeURL = '[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)';
+            return badgeURL;
+            break    
+        case 'Mozilla':
+            badgeURL = '[![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)';
+            return badgeURL;
+            break        
+        case 'WTFPL':
+            badgeURL = '[![License: WTFPL](https://img.shields.io/badge/License-WTFPL-brightgreen.svg)](http://www.wtfpl.net/about/)';
+        return badgeURL;
+        break
+            
         default:
-            badgeURL = 'Somethign very bad happened';
-        console.log('badgeURL is '+badgeURL);
+            badgeURL = '';
         return badgeURL;
     };
 };
